@@ -468,7 +468,7 @@ app_go/  (or app_rust, app_java, etc.)
     ├── GO.md                 # Language justification
     └── screenshots/
 ```
-
+                                                                                                                                                                                                                                                                                                                                                                                                         
 **Requirements:**
 - Same two endpoints: `/` and `/health`
 - Same JSON structure
