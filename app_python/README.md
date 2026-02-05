@@ -61,3 +61,16 @@ Usage example:
 ```bash
 HOST=127.0.0.1 PORT=8080 DEBUG=true python app.py
 ```
+
+## Docker
+
+```bash
+# Сборка
+docker build -t yourusername/system-info:lab02 .
+
+# Запуск
+docker run -p 6000:6000 yourusername/system-info:lab02
+
+# Из Docker Hub
+docker pull yourusername/system-info:lab02
+docker run -p 6000:6000 yourusername/system-info:lab02
