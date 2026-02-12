@@ -1,3 +1,7 @@
+# System Information API
+
+![CI/CD Status](https://github.com/PrizrakZamkov/DevOps-Core-Course-Prizrak/workflows/Python%20CI%2FCD/badge.svg)
+
 # System Information API Service
 
 A lightweight Flask-based REST API that delivers system metrics, Python environment data, and request information through JSON endpoints. Built as part of DevOps Engineering Lab 01.
