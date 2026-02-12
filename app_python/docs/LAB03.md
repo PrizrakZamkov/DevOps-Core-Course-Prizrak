@@ -35,7 +35,7 @@ Workflow starts when:
 
 ✅ **Successful workflow run:**
 i'll add later
-[https://github.com/PrizrakZamkov/DevOps-Core-Course-Prizrak/actions/runs/XXXXXX ](link-to-workflow)
+[https://github.com/PrizrakZamkov/DevOps-Core-Course-Prizrak/actions/runs/21959227080 ](link-to-workflow)
 
 ✅ **Tests passing locally:**
 ```
