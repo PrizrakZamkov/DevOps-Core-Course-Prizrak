@@ -40,7 +40,7 @@ i'll add later
 ✅ **Tests passing locally:**
 ```
 ======================== test session starts =========================
-collected 15 items
+collected 13 items
 
 tests/test_app.py::TestRootEndpoint::test_root_returns_200 PASSED
 tests/test_app.py::TestRootEndpoint::test_root_returns_json PASSED
@@ -56,7 +56,7 @@ tests/test_app.py::TestErrorHandling::test_404_not_found PASSED
 tests/test_app.py::TestErrorHandling::test_404_returns_json PASSED
 tests/test_app.py::TestErrorHandling::test_404_error_message PASSED
 
-======================== 15 passed in 0.23s =========================
+======================== 13 passed in 0.40s =========================
 ```
 
 ✅ **Docker Hub image:**
