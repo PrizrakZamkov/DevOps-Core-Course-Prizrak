@@ -11,7 +11,7 @@ def client():
 
 class TestRootEndpoint:
     def test_root_returns_200(self, client):
-        """Test that root endpoint returns 200 code"""
+        """Test that root endpoint returns 200 code""" 
         response = client.get('/')
         assert response.status_code == 200
     
