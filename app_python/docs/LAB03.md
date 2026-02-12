@@ -128,3 +128,34 @@ Pull Request only runs tests (without publishing an image), which is safer for t
 
 **The problem:** Pip caching did not work due to incorrect syntax in YAML.
 **Solution:** Studied the setup-python action documentation, fixed the `cache` parameter.
+
+## Testing
+
+### Running Tests Locally
+
+Install development dependencies:
+```bash
+pip install -r requirements-dev.txt
+```
+
+Run tests:
+```bash
+pytest tests/ -v
+```
+
+Run tests with coverage:
+```bash
+pytest tests/ -v --cov=app --cov-report=html
+```
+
+### CI/CD
+
+This project uses GitHub Actions for automated testing and deployment.
+On every push to `master` or `lab03`, the pipeline:
+1. Runs code linting (pylint)
+2. Executes unit tests
+3. Scans for security vulnerabilities (Snyk)
+4. Builds Docker image
+5. Pushes to Docker Hub with CalVer tagging
+
+View workflow runs: [Actions Tab](https://github.com/PrizrakZamkov/DevOps-Core-Course-Prizrak/actions)
