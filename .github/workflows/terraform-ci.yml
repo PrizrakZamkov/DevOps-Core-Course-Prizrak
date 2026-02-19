@@ -1,0 +1,71 @@
+name: Terraform CI
+
+on:
+  push:
+    branches: [ master, lab04 ]
+    paths:
+      - 'terraform/**'
+      - '.github/workflows/terraform-ci.yml'
+  pull_request:
+    branches: [ master ]
+    paths:
+      - 'terraform/**'
+
+defaults:
+  run:
+    working-directory: terraform
+
+jobs:
+  terraform-validate:
+    name: Terraform Validation
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.0
+      
+      - name: Terraform Format Check
+        id: fmt
+        run: terraform fmt -check -recursive
+        continue-on-error: true
+      
+      - name: Terraform Init
+        id: init
+        run: terraform init -backend=false
+      
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate -no-color
+      
+      - name: Comment Format Check Result
+        if: steps.fmt.outcome == 'failure'
+        run: |
+          echo "❌ Terraform formatting check failed!"
+          echo "Run 'terraform fmt -recursive' to fix"
+          exit 1
+
+  tflint:
+    name: TFLint
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: latest
+      
+      - name: Init TFLint
+        working-directory: terraform
+        run: tflint --init
+      
+      - name: Run TFLint
+        working-directory: terraform
+        run: tflint --format compact --no-color

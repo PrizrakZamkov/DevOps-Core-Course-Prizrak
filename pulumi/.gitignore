@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environment
+venv/
+env/
+ENV/
+
+# Pulumi
+Pulumi.*.yaml     # Stack configs (содержат секреты)
+*.pyc
+
+# Secrets
+key.json
+*.json
