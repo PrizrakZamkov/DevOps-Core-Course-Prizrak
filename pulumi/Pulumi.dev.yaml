@@ -1,0 +1,9 @@
+config:
+  yandex:cloud_id: b1guhfvq484l4qiqd03f
+  yandex:folder_id: b1g3j63o9j47hou5vmt8
+  yandex:zone: ru-central1-a
+  yandex:serviceAccountKeyFile:
+    secure: AAABAJDIbTUcfO81lvyNfc5abR3X5NMnWdRH1BW67sFWRPl102WLwQ==
+  lab04-pulumi:ssh_user: ubuntu
+  lab04-pulumi:vm_name: lab04-pulumi-vm
+  lab04-pulumi:ssh_public_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC/d/v9aI1gYoDTIPqNqH2GXPES43+nJob3RUV1MlaxXbplSUbhud/n5a/2RsCDDLKDnJEoEClYtQHvpOOSbCCn564Y9IxmzRh5D0sJ6bLlhEWXohKmdseaQi9kM9NHcx63bI6EtFo0f7YOLZKz8H/pR7y4Z788fMZTmoUb7HBM7ze7nQUb8mqu4kjgvx+XzcSm0odicu0e1qrXNGxDGny5yigpdze3vWPdOA4oR8HYWBKJ+uUd+QHHubgcBKNsSrtUZ195Mji+SFWmqoKER++JmqIcvZfoEr1uBjYmExNjIPpuDc78BpfBOSy23cO99gQZlp0SrscMVI9n9R2kDucS9pap4arRiB5cN+egYUGUbpzCmg00Ey+7RrAC5b73nWK+T8kUvMllc5BQ9JW869OocB8eXyeLGlJOLkdSssnII0v0WCrtP6dKHtyuSNhkCAJN/QAN8r4K0jQOS9TXbX0I0cZP3SXll3lVYWW/v/kFPy2+NPPy/YLCtnnW+gaRHLodQkd1ieXULRliAuLRAwzFMob2nFgxsUPbIF0uBFWIEHhahj4X50PqJ93SK+Ig3eXiHbdxJUFs/8maCLzqrd0Q4wNZlEo6NToPZ1iCY6giipF6Tlr6xpjqP8/5fOlEVzkOUcsoeupv4URcCjWcrpbA+F88NiVCo66zjpzYAYSdwQ== zamkovprizrak@yandex.ru\r\n"
