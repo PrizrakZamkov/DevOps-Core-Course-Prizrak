@@ -1,0 +1,8 @@
+---
+# Default variables for app_deploy role
+
+app_network_name: "app_network"
+app_restart_policy: "unless-stopped"
+app_pull_image: yes
+app_health_check_enabled: yes
+app_health_check_url: "http://localhost:{{ app_host_port }}/health"

@@ -1,0 +1,19 @@
+---
+- name: Deploy application
+  hosts: webservers
+  become: yes
+  vars_files:
+    - ../group_vars/all.yml
+  
+  roles:
+    - role: app_deploy
+      tags: deploy
+  
+  post_tasks:
+    - name: Display deployment success message
+      ansible.builtin.debug:
+        msg: "Application deployed successfully on port {{ app_host_port }}!"
+    
+    - name: Show application URL
+      ansible.builtin.debug:
+        msg: "Access application at: http://{{ ansible_host }}:{{ app_host_port }}"
