@@ -1,0 +1,18 @@
+---
+# System provisioning playbook
+
+- name: Provision web servers
+  hosts: webservers
+  become: yes
+  
+  roles:
+    - role: common
+      tags: common
+    
+    - role: docker
+      tags: docker
+  
+  post_tasks:
+    - name: Display provisioning completion message
+      ansible.builtin.debug:
+        msg: "System provisioning completed successfully!"

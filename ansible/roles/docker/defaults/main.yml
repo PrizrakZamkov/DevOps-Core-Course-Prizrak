@@ -1,0 +1,16 @@
+---
+# Default variables for docker role
+
+docker_packages:
+  - docker.io
+  - docker-compose
+  - python3-docker
+
+docker_users:
+  - ubuntu
+
+docker_daemon_options:
+  log-driver: "json-file"
+  log-opts:
+    max-size: "10m"
+    max-file: "3"
