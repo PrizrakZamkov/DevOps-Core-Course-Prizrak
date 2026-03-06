@@ -1,0 +1,43 @@
+---
+# Safe wipe logic with double-gating
+
+- name: Wipe application (DESTRUCTIVE)
+  block:
+    - name: Verify wipe is intended
+      ansible.builtin.fail:
+        msg: "Wipe aborted: web_app_wipe variable is not true"
+      when: not web_app_wipe | default(false) | bool
+
+    - name: Stop and remove containers
+      community.docker.docker_compose_v2:
+        project_src: "/opt/{{ app_container_name }}"
+        state: absent
+      ignore_errors: yes
+
+    - name: Remove application directory
+      ansible.builtin.file:
+        path: "/opt/{{ app_container_name }}"
+        state: absent
+
+    - name: Remove Docker network
+      community.docker.docker_network:
+        name: "{{ app_network_name }}"
+        state: absent
+      ignore_errors: yes
+
+    - name: Remove deployment logs
+      ansible.builtin.file:
+        path: "/tmp/{{ app_container_name }}_deploy.log"
+        state: absent
+
+  always:
+    - name: Log wipe completion
+      ansible.builtin.copy:
+        content: "Wipe completed at {{ ansible_date_time.iso8601 }}"
+        dest: "/tmp/{{ app_container_name }}_wipe.log"
+        mode: '0644'
+
+  become: yes
+  tags:
+    - never
+    - wipe
