@@ -1,0 +1,65 @@
+---
+# Application deployment with Docker Compose
+
+- name: Application deployment
+  block:
+    - name: Create application directory
+      ansible.builtin.file:
+        path: "/opt/{{ app_container_name }}"
+        state: directory
+        mode: '0755'
+
+    - name: Template docker-compose.yml
+      ansible.builtin.template:
+        src: docker-compose.yml.j2
+        dest: "/opt/{{ app_container_name }}/docker-compose.yml"
+        mode: '0644'
+
+    - name: Log in to Docker Hub
+      community.docker.docker_login:
+        username: "{{ docker_hub_username }}"
+        password: "{{ docker_hub_password }}"
+        state: present
+
+    - name: Deploy application with Docker Compose
+      community.docker.docker_compose_v2:
+        project_src: "/opt/{{ app_container_name }}"
+        pull: always
+        state: present
+      register: compose_output
+
+    - name: Wait for application to start
+      ansible.builtin.wait_for:
+        host: localhost
+        port: "{{ app_host_port }}"
+        delay: 5
+        timeout: 60
+        state: started
+
+  rescue:
+    - name: Show deployment error
+      ansible.builtin.debug:
+        msg: "Deployment failed: {{ compose_output }}"
+
+    - name: Cleanup failed deployment
+      community.docker.docker_compose_v2:
+        project_src: "/opt/{{ app_container_name }}"
+        state: absent
+
+  always:
+    - name: Log deployment status
+      ansible.builtin.copy:
+        content: "Deployment completed at {{ ansible_date_time.iso8601 }}"
+        dest: "/tmp/{{ app_container_name }}_deploy.log"
+        mode: '0644'
+
+  become: yes
+  tags:
+    - deploy
+    - compose
+# Import wipe tasks (only runs with --tags wipe)
+- name: Import wipe tasks
+  ansible.builtin.include_tasks: wipe.yml
+  tags:
+    - never
+    - wipe

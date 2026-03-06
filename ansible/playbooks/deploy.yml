@@ -6,7 +6,7 @@
     - ../group_vars/all.yml
   
   roles:
-    - role: app_deploy
+    - role: web_app
       tags: deploy
   
   post_tasks:

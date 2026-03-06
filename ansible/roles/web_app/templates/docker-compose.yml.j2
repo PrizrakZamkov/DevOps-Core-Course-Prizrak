@@ -1,0 +1,18 @@
+services:
+  {{ app_container_name }}:
+    image: {{ app_image }}
+    container_name: {{ app_container_name }}
+    ports:
+      - "{{ app_host_port }}:{{ app_port }}"
+    environment:
+      HOST: "0.0.0.0"
+      PORT: "{{ app_port }}"
+      DEBUG: "false"
+    restart: unless-stopped
+    networks:
+      - {{ app_network_name }}
+
+networks:
+  {{ app_network_name }}:
+    external: false
+    name: {{ app_network_name }}

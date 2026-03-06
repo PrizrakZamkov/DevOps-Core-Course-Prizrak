@@ -1,5 +1,5 @@
 # System Information API
-
+![Ansible Deploy](https://github.com/PrizrakZamkov/DevOps-Core-Course-Prizrak/workflows/Ansible%20Deploy/badge.svg)
 ![CI/CD Status](https://github.com/PrizrakZamkov/DevOps-Core-Course-Prizrak/workflows/Python%20CI%2FCD/badge.svg)
 
 # System Information API Service
