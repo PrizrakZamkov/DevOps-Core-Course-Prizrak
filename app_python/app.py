@@ -1,10 +1,12 @@
 import json
 import logging
 import sys
+import time
 from datetime import datetime, timezone
 from flask import Flask, request, jsonify
 import socket
 import platform
+from prometheus_client import Counter, Histogram, Gauge, generate_latest, CONTENT_TYPE_LATEST
 
 # JSON Formatter for structured logging
 class JSONFormatter(logging.Formatter):
@@ -42,6 +44,30 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
+# Prometheus Metrics
+http_requests_total = Counter(
+    'http_requests_total',
+    'Total HTTP requests',
+    ['method', 'endpoint', 'status']
+)
+
+http_request_duration_seconds = Histogram(
+    'http_request_duration_seconds',
+    'HTTP request duration in seconds',
+    ['method', 'endpoint']
+)
+
+http_requests_in_progress = Gauge(
+    'http_requests_in_progress',
+    'HTTP requests currently being processed'
+)
+
+endpoint_calls = Counter(
+    'devops_info_endpoint_calls',
+    'Endpoint-specific call counter',
+    ['endpoint']
+)
+
 logger.info('Application starting', extra={
     'hostname': socket.gethostname(),
     'platform': platform.system(),
@@ -49,7 +75,10 @@ logger.info('Application starting', extra={
 })
 
 @app.before_request
-def log_request():
+def before_request():
+    request.start_time = time.time()
+    http_requests_in_progress.inc()
+    
     logger.info('HTTP request received', extra={
         'method': request.method,
         'path': request.path,
@@ -58,30 +87,61 @@ def log_request():
     })
 
 @app.after_request
-def log_response(response):
+def after_request(response):
+    # Calculate request duration
+    request_duration = time.time() - request.start_time
+    
+    # Normalize endpoint for metrics
+    endpoint = request.path
+    if endpoint not in ['/', '/health', '/metrics']:
+        endpoint = 'other'
+    
+    # Record metrics
+    http_requests_total.labels(
+        method=request.method,
+        endpoint=endpoint,
+        status=response.status_code
+    ).inc()
+    
+    http_request_duration_seconds.labels(
+        method=request.method,
+        endpoint=endpoint
+    ).observe(request_duration)
+    
+    http_requests_in_progress.dec()
+    
     logger.info('HTTP response sent', extra={
         'method': request.method,
         'path': request.path,
         'status_code': response.status_code,
-        'content_length': response.content_length
+        'content_length': response.content_length,
+        'duration_seconds': round(request_duration, 4)
     })
+    
     return response
 
 @app.route('/')
 def index():
+    endpoint_calls.labels(endpoint='index').inc()
     return jsonify({
         'service': 'System Information API',
         'version': '2.0.0',
         'hostname': socket.gethostname(),
-        'platform': platform.system()
+        'platform': platform.system(),
+        'metrics_available': '/metrics'
     })
 
 @app.route('/health')
 def health():
+    endpoint_calls.labels(endpoint='health').inc()
     return jsonify({
         'status': 'healthy',
         'timestamp': datetime.now(timezone.utc).isoformat()
     })
+
+@app.route('/metrics')
+def metrics():
+    return generate_latest(), 200, {'Content-Type': CONTENT_TYPE_LATEST}
 
 @app.errorhandler(404)
 def not_found(error):
@@ -90,6 +150,13 @@ def not_found(error):
         'method': request.method,
         'remote_addr': request.remote_addr
     })
+    
+    http_requests_total.labels(
+        method=request.method,
+        endpoint='not_found',
+        status=404
+    ).inc()
+    
     return jsonify({'error': 'Not found'}), 404
 
 @app.errorhandler(Exception)
@@ -99,6 +166,13 @@ def handle_exception(error):
         'path': request.path,
         'method': request.method
     }, exc_info=True)
+    
+    http_requests_total.labels(
+        method=request.method,
+        endpoint='error',
+        status=500
+    ).inc()
+    
     return jsonify({'error': 'Internal server error'}), 500
 
 if __name__ == '__main__':
