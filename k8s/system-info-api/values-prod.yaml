@@ -1,0 +1,26 @@
+# Production environment
+
+replicaCount: 5
+
+image:
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP 
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+
+livenessProbe:
+  initialDelaySeconds: 15
+  periodSeconds: 10
+
+readinessProbe:
+  initialDelaySeconds: 10
+  periodSeconds: 5
