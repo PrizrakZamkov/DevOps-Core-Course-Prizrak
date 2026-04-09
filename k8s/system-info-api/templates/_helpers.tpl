@@ -51,6 +51,50 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
+Create the name of the Kubernetes Secret to use
+*/}}
+{{- define "system-info-api.secretName" -}}
+{{- if .Values.secret.name }}
+{{- .Values.secret.name | trunc 63 | trimSuffix "-" }}
+{{- else }}
+{{- printf "%s-secret" (include "system-info-api.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- end }}
+{{- end }}
+
+{{/*
+Common environment variables shared by the deployment
+*/}}
+{{- define "system-info-api.envVars" -}}
+{{- with .Values.env }}
+{{- toYaml . }}
+{{- end }}
+{{- if .Values.vault.enabled }}
+- name: VAULT_SECRET_FILE
+  value: {{ printf "/vault/secrets/%s" .Values.vault.fileName | quote }}
+{{- end }}
+{{- end }}
+
+{{/*
+Vault Agent Injector annotations
+*/}}
+{{- define "system-info-api.vaultAnnotations" -}}
+vault.hashicorp.com/agent-inject: "true"
+vault.hashicorp.com/role: {{ .Values.vault.role | quote }}
+vault.hashicorp.com/auth-path: {{ .Values.vault.authPath | quote }}
+vault.hashicorp.com/agent-inject-secret-{{ .Values.vault.fileName }}: {{ .Values.vault.secretPath | quote }}
+{{- if .Values.vault.template }}
+vault.hashicorp.com/agent-inject-template-{{ .Values.vault.fileName }}: |
+{{ trim .Values.vault.template | indent 2 }}
+{{- end }}
+{{- if .Values.vault.command }}
+vault.hashicorp.com/agent-inject-command-{{ .Values.vault.fileName }}: {{ .Values.vault.command | quote }}
+{{- end }}
+{{- range $key, $value := .Values.vault.extraAnnotations }}
+{{ $key }}: {{ $value | quote }}
+{{- end }}
+{{- end }}
+
+{{/*
 Create the name of the service account to use
 */}}
 {{- define "system-info-api.serviceAccountName" -}}

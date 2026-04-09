@@ -18,7 +18,13 @@ spec:
     metadata:
       labels:
         {{- include "system-info-api.selectorLabels" . | nindent 8 }}
+      {{- if .Values.vault.enabled }}
+      annotations:
+        {{- include "system-info-api.vaultAnnotations" . | nindent 8 }}
+      {{- end }}
     spec:
+      serviceAccountName: {{ include "system-info-api.serviceAccountName" . }}
+      automountServiceAccountToken: {{ .Values.serviceAccount.automount }}
       containers:
       - name: {{ .Chart.Name }}
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
@@ -27,8 +33,15 @@ spec:
         - name: http
           containerPort: {{ .Values.service.targetPort }}
           protocol: TCP
+        {{- if or .Values.env .Values.vault.enabled }}
         env:
-        {{- toYaml .Values.env | nindent 8 }}
+          {{- include "system-info-api.envVars" . | nindent 10 }}
+        {{- end }}
+        {{- if .Values.secret.enabled }}
+        envFrom:
+        - secretRef:
+            name: {{ include "system-info-api.secretName" . }}
+        {{- end }}
         livenessProbe:
           {{- toYaml .Values.livenessProbe | nindent 10 }}
         readinessProbe:
