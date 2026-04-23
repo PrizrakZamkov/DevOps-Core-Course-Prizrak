@@ -250,6 +250,8 @@ kubectl delete pod my-app-system-info-api-xxxxx-aaaaa
 ```bash
 curl http://.../visits
 {"visits":10}
+
+DATA IS SAVED after remaking pods, all is ok
 ```
 
 ✅ Counter preserved across pod restart!
