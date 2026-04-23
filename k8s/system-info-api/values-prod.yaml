@@ -3,7 +3,7 @@
 replicaCount: 5
 
 image:
-  tag: "latest"
+  tag: "2.0.0"
   pullPolicy: IfNotPresent
 
 service:
@@ -24,3 +24,14 @@ livenessProbe:
 readinessProbe:
   initialDelaySeconds: 10
   periodSeconds: 5
+
+environment: production
+logLevel: INFO
+
+features:
+  metrics: true
+  visits: true
+
+persistence:
+  enabled: true
+  size: 200Mi

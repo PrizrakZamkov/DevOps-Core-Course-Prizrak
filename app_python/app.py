@@ -7,6 +7,8 @@ from flask import Flask, request, jsonify
 import socket
 import platform
 from prometheus_client import Counter, Histogram, Gauge, generate_latest, CONTENT_TYPE_LATEST
+import os
+from pathlib import Path
 
 # JSON Formatter for structured logging
 class JSONFormatter(logging.Formatter):
@@ -74,6 +76,31 @@ logger.info('Application starting', extra={
     'python_version': platform.python_version()
 })
 
+# Visits counter
+VISITS_FILE = Path('/data/visits')
+
+def get_visits():
+    """Read visits count from file"""
+    try:
+        if VISITS_FILE.exists():
+            return int(VISITS_FILE.read_text().strip())
+    except Exception as e:
+        logger.error(f'Error reading visits: {e}')
+    return 0
+
+def increment_visits():
+    """Increment and save visits count"""
+    try:
+        # Create directory if doesn't exist
+        VISITS_FILE.parent.mkdir(parents=True, exist_ok=True)
+        
+        count = get_visits() + 1
+        VISITS_FILE.write_text(str(count))
+        return count
+    except Exception as e:
+        logger.error(f'Error writing visits: {e}')
+        return get_visits()
+
 @app.before_request
 def before_request():
     request.start_time = time.time()
@@ -123,12 +150,17 @@ def after_request(response):
 @app.route('/')
 def index():
     endpoint_calls.labels(endpoint='index').inc()
+    
+    # Increment visits
+    visits = increment_visits()
+    
     return jsonify({
         'service': 'System Information API',
         'version': '2.0.0',
         'hostname': socket.gethostname(),
         'platform': platform.system(),
-        'metrics_available': '/metrics'
+        'metrics_available': '/metrics',
+        'visits': visits
     })
 
 @app.route('/health')
@@ -137,6 +169,14 @@ def health():
     return jsonify({
         'status': 'healthy',
         'timestamp': datetime.now(timezone.utc).isoformat()
+    })
+
+@app.route('/visits')
+def visits():
+    """Return current visits count"""
+    count = get_visits()
+    return jsonify({
+        'visits': count
     })
 
 @app.route('/metrics')
