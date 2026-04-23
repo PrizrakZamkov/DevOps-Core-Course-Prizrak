@@ -25,26 +25,43 @@ spec:
     spec:
       serviceAccountName: {{ include "system-info-api.serviceAccountName" . }}
       automountServiceAccountToken: {{ .Values.serviceAccount.automount }}
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {{ include "system-info-api.fullname" . }}-config
+        {{- if .Values.persistence.enabled }}
+        - name: data-volume
+          persistentVolumeClaim:
+            claimName: {{ include "system-info-api.fullname" . }}-data
+        {{- end }}
       containers:
-      - name: {{ .Chart.Name }}
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
-        ports:
-        - name: http
-          containerPort: {{ .Values.service.targetPort }}
-          protocol: TCP
-        {{- if or .Values.env .Values.vault.enabled }}
-        env:
-          {{- include "system-info-api.envVars" . | nindent 10 }}
-        {{- end }}
-        {{- if .Values.secret.enabled }}
-        envFrom:
-        - secretRef:
-            name: {{ include "system-info-api.secretName" . }}
-        {{- end }}
-        livenessProbe:
-          {{- toYaml .Values.livenessProbe | nindent 10 }}
-        readinessProbe:
-          {{- toYaml .Values.readinessProbe | nindent 10 }}
-        resources:
-          {{- toYaml .Values.resources | nindent 10 }}
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.targetPort }}
+              protocol: TCP
+          env:
+            {{- toYaml .Values.env | nindent 12 }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "system-info-api.fullname" . }}-env
+          {{- if .Values.secret.enabled }}
+            - secretRef:
+                name: {{ include "system-info-api.secretName" . }}
+          {{- end }}
+          volumeMounts:
+            - name: config-volume
+              mountPath: /config
+              readOnly: true
+            {{- if .Values.persistence.enabled }}
+            - name: data-volume
+              mountPath: /data
+            {{- end }}
+          livenessProbe:
+            {{- toYaml .Values.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}

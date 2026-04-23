@@ -80,3 +80,17 @@ vault:
 nodeSelector: {}
 tolerations: []
 affinity: {}
+
+# Environment configuration
+environment: production
+logLevel: INFO
+
+features:
+  metrics: true
+  visits: true
+
+  # Persistent storage
+persistence:
+  enabled: true
+  size: 100Mi
+  storageClass: ""  # Use default (minikube: standard)

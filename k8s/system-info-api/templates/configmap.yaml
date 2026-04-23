@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "system-info-api.fullname" . }}-config
+  labels:
+    {{- include "system-info-api.labels" . | nindent 4 }}
+data:
+  config.json: |-
+{{ .Files.Get "files/config.json" | indent 4 }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "system-info-api.fullname" . }}-env
+  labels:
+    {{- include "system-info-api.labels" . | nindent 4 }}
+data:
+  APP_ENV: {{ .Values.environment | default "production" | quote }}
+  LOG_LEVEL: {{ .Values.logLevel | default "INFO" | quote }}
+  FEATURES_METRICS: {{ .Values.features.metrics | default "true" | quote }}

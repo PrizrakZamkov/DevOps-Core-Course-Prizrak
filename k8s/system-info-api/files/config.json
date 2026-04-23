@@ -1,0 +1,13 @@
+{
+  "app_name": "System Info API",
+  "environment": "production",
+  "features": {
+    "metrics_enabled": true,
+    "visits_enabled": true,
+    "health_checks": true
+  },
+  "logging": {
+    "level": "INFO",
+    "format": "json"
+  }
+}
