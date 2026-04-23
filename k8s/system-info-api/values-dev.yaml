@@ -1,14 +1,22 @@
-# Development environment
-
 replicaCount: 1
 
 image:
+  repository: prizrakzamkov/system-info-api
   tag: "latest"
   pullPolicy: Always
 
+environment: development
+logLevel: DEBUG
+
+features:
+  metrics: "true"
+  visits: "true"
+
 service:
   type: NodePort
-  nodePort: 30081
+  port: 80
+  targetPort: 6000
+  nodePort: 30080
 
 resources:
   limits:
@@ -17,13 +25,6 @@ resources:
   requests:
     cpu: 50m
     memory: 64Mi
-
-environment: development
-logLevel: DEBUG
-
-features:
-  metrics: true
-  visits: true
 
 persistence:
   enabled: true
