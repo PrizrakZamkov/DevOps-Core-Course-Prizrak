@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: python-app-bluegreen
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/PrizrakZamkov/DevOps-Core-Course-Prizrak.git
+    targetRevision: main
+    path: k8s/system-info-api
+    helm:
+      valueFiles:
+        - values-rollout-bluegreen.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: rollout-bluegreen
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m

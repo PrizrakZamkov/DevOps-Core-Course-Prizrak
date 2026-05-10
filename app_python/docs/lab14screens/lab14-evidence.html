@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lab 14 Evidence - Progressive Delivery</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f8fa;
+      --panel: #ffffff;
+      --ink: #1f2328;
+      --muted: #626c7a;
+      --line: #d7dde5;
+      --blue: #0b63b6;
+      --green: #13795b;
+      --orange: #a85c00;
+      --red: #b42318;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.45;
+    }
+    main {
+      width: min(1180px, calc(100% - 48px));
+      margin: 0 auto;
+      padding: 32px 0 48px;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      align-items: flex-start;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--line);
+    }
+    h1, h2, h3, p { margin: 0; }
+    h1 { font-size: 32px; letter-spacing: 0; }
+    h2 { font-size: 22px; margin-bottom: 12px; }
+    h3 { font-size: 16px; margin-bottom: 6px; }
+    .muted { color: var(--muted); }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 18px;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 18px;
+    }
+    .wide { grid-column: 1 / -1; }
+    .status {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 12px;
+      color: #fff;
+    }
+    .green { background: var(--green); }
+    .orange { background: var(--orange); }
+    .red { background: var(--red); }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 10px 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { color: var(--muted); font-weight: 700; }
+    code, pre {
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 13px;
+    }
+    pre {
+      overflow: auto;
+      background: #111827;
+      color: #e5e7eb;
+      border-radius: 8px;
+      padding: 14px;
+      margin: 10px 0 0;
+    }
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      align-items: stretch;
+    }
+    .step {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f9fbfe;
+      padding: 12px;
+      min-height: 86px;
+    }
+    .step strong { color: var(--blue); }
+    ul { margin: 8px 0 0; padding-left: 20px; }
+    li { margin: 4px 0; }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>Lab 14 - Progressive Delivery</h1>
+        <p class="muted">Argo Rollouts implementation evidence</p>
+      </div>
+      <div>
+        <span class="status green">Implemented</span>
+      </div>
+    </header>
+
+    <section class="grid" id="overview">
+      <article class="panel">
+        <h2>Deliverables</h2>
+        <ul>
+          <li><code>templates/rollout.yaml</code> creates Rollout when enabled.</li>
+          <li><code>templates/preview-service.yaml</code> creates blue-green preview service.</li>
+          <li><code>templates/analysis-template.yaml</code> provides health-based analysis.</li>
+          <li><code>values-rollout-canary.yaml</code> configures canary.</li>
+          <li><code>values-rollout-bluegreen.yaml</code> configures blue-green.</li>
+        </ul>
+      </article>
+      <article class="panel">
+        <h2>Local Tool Check</h2>
+        <table>
+          <tr><th>Tool</th><th>Status in this shell</th></tr>
+          <tr><td>Playwright</td><td><span class="status green">Available</span> 1.59.1</td></tr>
+          <tr><td>kubectl</td><td><span class="status red">Not in PATH</span></td></tr>
+          <tr><td>helm</td><td><span class="status red">Not in PATH</span></td></tr>
+          <tr><td>Rollouts Dashboard</td><td><span class="status orange">Needs cluster run</span></td></tr>
+        </table>
+      </article>
+      <article class="panel wide">
+        <h2>Rollout Flow</h2>
+        <div class="steps">
+          <div class="step"><strong>1. Helm values</strong><br>Enable <code>rollout.enabled</code>.</div>
+          <div class="step"><strong>2. Rollout CRD</strong><br>Replaces Deployment for progressive delivery.</div>
+          <div class="step"><strong>3. Canary</strong><br>Traffic moves 20, 40, 60, 80, 100.</div>
+          <div class="step"><strong>4. Blue-green</strong><br>Preview service tests green before promotion.</div>
+          <div class="step"><strong>5. Analysis</strong><br>Health check can stop bad releases.</div>
+        </div>
+      </article>
+    </section>
+
+    <section class="grid" id="canary">
+      <article class="panel wide">
+        <h2>Canary Strategy</h2>
+        <table>
+          <tr><th>Step</th><th>Behavior</th></tr>
+          <tr><td>20%</td><td>First small traffic slice, then manual pause.</td></tr>
+          <tr><td>40%</td><td>Automatic wait for 30 seconds.</td></tr>
+          <tr><td>60%</td><td>Automatic wait for 30 seconds.</td></tr>
+          <tr><td>80%</td><td>Automatic wait for 30 seconds.</td></tr>
+          <tr><td>100%</td><td>Canary becomes stable version.</td></tr>
+        </table>
+        <pre>rollout:
+  enabled: true
+  strategy: canary
+  canary:
+    steps:
+      - setWeight: 20
+      - pause: {}
+      - setWeight: 40
+      - pause:
+          duration: 30s</pre>
+      </article>
+    </section>
+
+    <section class="grid" id="bluegreen">
+      <article class="panel">
+        <h2>Blue-Green Strategy</h2>
+        <pre>rollout:
+  enabled: true
+  strategy: blueGreen
+  blueGreen:
+    autoPromotionEnabled: false
+    previewService:
+      type: ClusterIP</pre>
+      </article>
+      <article class="panel">
+        <h2>Services</h2>
+        <table>
+          <tr><th>Service</th><th>Purpose</th></tr>
+          <tr><td>active</td><td>Serves production traffic.</td></tr>
+          <tr><td>preview</td><td>Tests new version before promotion.</td></tr>
+        </table>
+      </article>
+      <article class="panel wide">
+        <h2>Canary vs Blue-Green</h2>
+        <table>
+          <tr><th>Case</th><th>Canary</th><th>Blue-green</th></tr>
+          <tr><td>Release style</td><td>Gradual traffic shifting</td><td>Instant switch after preview</td></tr>
+          <tr><td>Rollback</td><td>Abort and shift back</td><td>Switch active service back</td></tr>
+          <tr><td>Resources</td><td>Lower</td><td>Higher during deployment</td></tr>
+          <tr><td>Best for</td><td>Risky API changes with metrics</td><td>Preview testing and fast cutover</td></tr>
+        </table>
+      </article>
+    </section>
+
+    <section class="grid" id="analysis">
+      <article class="panel wide">
+        <h2>Automated Analysis Bonus</h2>
+        <p class="muted">The canary values enable an AnalysisTemplate that calls the service health endpoint.</p>
+        <pre>metrics:
+  - name: health-check
+    interval: 10s
+    count: 3
+    failureLimit: 1
+    provider:
+      web:
+        url: http://&lt;service&gt;.&lt;namespace&gt;.svc.cluster.local/health
+        jsonPath: "{$.status}"
+    successCondition: result == "healthy"</pre>
+      </article>
+    </section>
+  </main>
+</body>
+</html>

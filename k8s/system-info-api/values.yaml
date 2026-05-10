@@ -94,3 +94,35 @@ persistence:
   enabled: true
   size: 100Mi
   storageClass: ""  # Use default (minikube: standard)
+
+rollout:
+  enabled: false
+  strategy: canary
+  canary:
+    steps:
+      - setWeight: 20
+      - pause: {}
+      - setWeight: 40
+      - pause:
+          duration: 30s
+      - setWeight: 60
+      - pause:
+          duration: 30s
+      - setWeight: 80
+      - pause:
+          duration: 30s
+      - setWeight: 100
+  blueGreen:
+    autoPromotionEnabled: false
+    autoPromotionSeconds: null
+    scaleDownDelaySeconds: 30
+    previewService:
+      type: ClusterIP
+      nodePort: null
+  analysis:
+    enabled: false
+    interval: 10s
+    count: 3
+    failureLimit: 1
+    healthPath: /health
+    expectedStatus: healthy

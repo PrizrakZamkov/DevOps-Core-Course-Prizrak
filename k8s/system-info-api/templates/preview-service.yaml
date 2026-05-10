@@ -1,0 +1,20 @@
+{{- if and .Values.rollout.enabled (eq .Values.rollout.strategy "blueGreen") }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "system-info-api.fullname" . }}-preview
+  labels:
+    {{- include "system-info-api.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.rollout.blueGreen.previewService.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.targetPort }}
+      protocol: TCP
+      name: http
+      {{- if (and (eq .Values.rollout.blueGreen.previewService.type "NodePort") .Values.rollout.blueGreen.previewService.nodePort) }}
+      nodePort: {{ .Values.rollout.blueGreen.previewService.nodePort }}
+      {{- end }}
+  selector:
+    {{- include "system-info-api.selectorLabels" . | nindent 4 }}
+{{- end }}
