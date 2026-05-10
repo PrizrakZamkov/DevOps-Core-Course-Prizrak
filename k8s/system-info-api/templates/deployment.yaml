@@ -30,11 +30,43 @@ spec:
         - name: config-volume
           configMap:
             name: {{ include "system-info-api.fullname" . }}-config
+        {{- if .Values.initContainers.download.enabled }}
+        - name: init-workdir
+          emptyDir: {}
+        {{- end }}
         {{- if .Values.persistence.enabled }}
         - name: data-volume
           persistentVolumeClaim:
             claimName: {{ include "system-info-api.fullname" . }}-data
         {{- end }}
+      {{- if or .Values.initContainers.download.enabled .Values.initContainers.waitForService.enabled }}
+      initContainers:
+        {{- if .Values.initContainers.waitForService.enabled }}
+        - name: wait-for-service
+          image: {{ .Values.initContainers.waitForService.image | quote }}
+          command:
+            - sh
+            - -c
+            - |
+              until nslookup {{ .Values.initContainers.waitForService.serviceName }}; do
+                echo "waiting for {{ .Values.initContainers.waitForService.serviceName }}";
+                sleep {{ .Values.initContainers.waitForService.intervalSeconds }};
+              done
+        {{- end }}
+        {{- if .Values.initContainers.download.enabled }}
+        - name: init-download
+          image: {{ .Values.initContainers.download.image | quote }}
+          command:
+            - sh
+            - -c
+            - |
+              wget -O /work-dir/{{ .Values.initContainers.download.fileName }} {{ .Values.initContainers.download.url }}
+              ls -la /work-dir
+          volumeMounts:
+            - name: init-workdir
+              mountPath: /work-dir
+        {{- end }}
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
@@ -56,6 +88,11 @@ spec:
             - name: config-volume
               mountPath: /config
               readOnly: true
+            {{- if .Values.initContainers.download.enabled }}
+            - name: init-workdir
+              mountPath: {{ .Values.initContainers.download.mountPath }}
+              readOnly: true
+            {{- end }}
             {{- if .Values.persistence.enabled }}
             - name: data-volume
               mountPath: /data
