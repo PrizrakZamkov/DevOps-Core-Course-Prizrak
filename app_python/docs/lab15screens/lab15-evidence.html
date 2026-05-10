@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lab 15 Evidence - StatefulSets</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f8fa;
+      --panel: #ffffff;
+      --ink: #1f2328;
+      --muted: #626c7a;
+      --line: #d7dde5;
+      --blue: #0b63b6;
+      --green: #13795b;
+      --orange: #a85c00;
+      --red: #b42318;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.45;
+    }
+    main {
+      width: min(1180px, calc(100% - 48px));
+      margin: 0 auto;
+      padding: 32px 0 48px;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      align-items: flex-start;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--line);
+    }
+    h1, h2, h3, p { margin: 0; }
+    h1 { font-size: 32px; letter-spacing: 0; }
+    h2 { font-size: 22px; margin-bottom: 12px; }
+    h3 { font-size: 16px; margin-bottom: 6px; }
+    .muted { color: var(--muted); }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 18px;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 18px;
+    }
+    .wide { grid-column: 1 / -1; }
+    .status {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 12px;
+      color: #fff;
+    }
+    .green { background: var(--green); }
+    .orange { background: var(--orange); }
+    .red { background: var(--red); }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 10px 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { color: var(--muted); font-weight: 700; }
+    code, pre {
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 13px;
+    }
+    pre {
+      overflow: auto;
+      background: #111827;
+      color: #e5e7eb;
+      border-radius: 8px;
+      padding: 14px;
+      margin: 10px 0 0;
+    }
+    .identity {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      align-items: stretch;
+    }
+    .pod {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f9fbfe;
+      padding: 12px;
+      min-height: 92px;
+    }
+    .pod strong { color: var(--blue); }
+    ul { margin: 8px 0 0; padding-left: 20px; }
+    li { margin: 4px 0; }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>Lab 15 - StatefulSets</h1>
+        <p class="muted">Stable identity and per-pod persistent storage evidence</p>
+      </div>
+      <div>
+        <span class="status green">Implemented</span>
+      </div>
+    </header>
+
+    <section class="grid" id="overview">
+      <article class="panel">
+        <h2>Deliverables</h2>
+        <ul>
+          <li><code>templates/statefulset.yaml</code> renders StatefulSet.</li>
+          <li><code>templates/headless-service.yaml</code> renders stable DNS service.</li>
+          <li><code>values-statefulset.yaml</code> enables stateful mode.</li>
+          <li><code>values-statefulset-partition.yaml</code> tests partitioned update.</li>
+          <li><code>values-statefulset-ondelete.yaml</code> tests OnDelete update.</li>
+        </ul>
+      </article>
+      <article class="panel">
+        <h2>Local Tool Check</h2>
+        <table>
+          <tr><th>Tool</th><th>Status in this shell</th></tr>
+          <tr><td>Playwright</td><td><span class="status green">Available</span> 1.59.1</td></tr>
+          <tr><td>kubectl</td><td><span class="status red">Not in PATH</span></td></tr>
+          <tr><td>helm</td><td><span class="status red">Not in PATH</span></td></tr>
+          <tr><td>Live StatefulSet</td><td><span class="status orange">Needs cluster run</span></td></tr>
+        </table>
+      </article>
+      <article class="panel wide">
+        <h2>Stateful Identity</h2>
+        <div class="identity">
+          <div class="pod"><strong>pod-0</strong><br><code>system-info-stateful-system-info-api-0</code><br>owns PVC suffix <code>-0</code></div>
+          <div class="pod"><strong>pod-1</strong><br><code>system-info-stateful-system-info-api-1</code><br>owns PVC suffix <code>-1</code></div>
+          <div class="pod"><strong>pod-2</strong><br><code>system-info-stateful-system-info-api-2</code><br>owns PVC suffix <code>-2</code></div>
+        </div>
+      </article>
+    </section>
+
+    <section class="grid" id="statefulset">
+      <article class="panel wide">
+        <h2>StatefulSet Configuration</h2>
+        <table>
+          <tr><th>Setting</th><th>Value</th><th>Why</th></tr>
+          <tr><td>replicas</td><td>3</td><td>Three stable app instances.</td></tr>
+          <tr><td>serviceName</td><td><code>*-headless</code></td><td>Required for stable DNS.</td></tr>
+          <tr><td>podManagementPolicy</td><td><code>OrderedReady</code></td><td>Pods start and stop in order.</td></tr>
+          <tr><td>volumeClaimTemplates</td><td><code>data-volume</code></td><td>One PVC per pod.</td></tr>
+          <tr><td>access mode</td><td><code>ReadWriteOnce</code></td><td>Each pod owns its volume.</td></tr>
+        </table>
+        <pre>statefulset:
+  enabled: true
+  podManagementPolicy: OrderedReady
+persistence:
+  enabled: true
+  size: 100Mi
+  accessMode: ReadWriteOnce</pre>
+      </article>
+    </section>
+
+    <section class="grid" id="storage">
+      <article class="panel">
+        <h2>Per-Pod Storage Test</h2>
+        <table>
+          <tr><th>Pod</th><th>Example visits</th><th>Storage</th></tr>
+          <tr><td>pod-0</td><td>2</td><td><code>/data/visits</code> on PVC 0</td></tr>
+          <tr><td>pod-1</td><td>1</td><td><code>/data/visits</code> on PVC 1</td></tr>
+          <tr><td>pod-2</td><td>0</td><td><code>/data/visits</code> on PVC 2</td></tr>
+        </table>
+      </article>
+      <article class="panel">
+        <h2>DNS Pattern</h2>
+        <pre>&lt;pod-name&gt;.&lt;headless-service&gt;.&lt;namespace&gt;.svc.cluster.local</pre>
+        <p class="muted">Headless service uses <code>clusterIP: None</code>.</p>
+      </article>
+      <article class="panel wide">
+        <h2>Persistence Test</h2>
+        <pre>kubectl exec system-info-stateful-system-info-api-0 -n stateful -- cat /data/visits
+kubectl delete pod system-info-stateful-system-info-api-0 -n stateful
+kubectl exec system-info-stateful-system-info-api-0 -n stateful -- cat /data/visits</pre>
+        <p class="muted">Expected result: same visits value before and after deletion.</p>
+      </article>
+    </section>
+
+    <section class="grid" id="updates">
+      <article class="panel wide">
+        <h2>Update Strategy Bonus</h2>
+        <table>
+          <tr><th>Strategy</th><th>File</th><th>Behavior</th></tr>
+          <tr><td>Partitioned RollingUpdate</td><td><code>values-statefulset-partition.yaml</code></td><td>Only pods with ordinal greater/equal partition update.</td></tr>
+          <tr><td>OnDelete</td><td><code>values-statefulset-ondelete.yaml</code></td><td>Pods update only after manual deletion.</td></tr>
+        </table>
+        <pre>updateStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    partition: 2</pre>
+      </article>
+    </section>
+  </main>
+</body>
+</html>
