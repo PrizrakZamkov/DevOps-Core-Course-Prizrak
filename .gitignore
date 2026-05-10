@@ -1,3 +1,11 @@
 test
 terraform.tfvars
 k8s/minikube-linux-amd64
+
+# Playwright
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/

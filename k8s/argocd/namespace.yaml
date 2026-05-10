@@ -1,0 +1,20 @@
+---
+# ArgoCD Namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: argocd
+
+---
+# Dev Environment Namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dev
+
+---
+# Prod Environment Namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: prod
