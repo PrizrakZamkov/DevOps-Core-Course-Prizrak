@@ -1,0 +1,33 @@
+# Lab 15 bonus: StatefulSet OnDelete update strategy
+
+replicaCount: 3
+
+image:
+  repository: prizrakzamkov/system-info-api
+  tag: "2.1.0"
+  pullPolicy: IfNotPresent
+
+environment: stateful
+logLevel: INFO
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 6000
+
+persistence:
+  enabled: true
+  size: 100Mi
+  accessMode: ReadWriteOnce
+  storageClass: ""
+
+statefulset:
+  enabled: true
+  podManagementPolicy: OrderedReady
+  updateStrategy:
+    type: OnDelete
+    partitioned: false
+    partition: 0
+
+rollout:
+  enabled: false

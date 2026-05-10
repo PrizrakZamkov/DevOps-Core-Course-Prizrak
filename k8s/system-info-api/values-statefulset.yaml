@@ -1,0 +1,47 @@
+# Lab 15: StatefulSet values
+
+replicaCount: 3
+
+image:
+  repository: prizrakzamkov/system-info-api
+  tag: "2.0.0"
+  pullPolicy: IfNotPresent
+
+environment: stateful
+logLevel: INFO
+
+features:
+  metrics: true
+  visits: true
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 6000
+
+resources:
+  limits:
+    cpu: 300m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+persistence:
+  enabled: true
+  size: 100Mi
+  accessMode: ReadWriteOnce
+  storageClass: ""
+
+statefulset:
+  enabled: true
+  podManagementPolicy: OrderedReady
+  headlessService:
+    publishNotReadyAddresses: false
+  updateStrategy:
+    type: RollingUpdate
+    partitioned: false
+    partition: 0
+
+rollout:
+  enabled: false

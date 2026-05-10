@@ -93,7 +93,18 @@ features:
 persistence:
   enabled: true
   size: 100Mi
+  accessMode: ReadWriteOnce
   storageClass: ""  # Use default (minikube: standard)
+
+statefulset:
+  enabled: false
+  podManagementPolicy: OrderedReady
+  headlessService:
+    publishNotReadyAddresses: false
+  updateStrategy:
+    type: RollingUpdate
+    partitioned: false
+    partition: 0
 
 rollout:
   enabled: false
