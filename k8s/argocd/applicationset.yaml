@@ -1,0 +1,57 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: python-app-set
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+  generators:
+    - list:
+        elements:
+          - env: dev
+            namespace: dev
+            valuesFile: values-dev.yaml
+            autoSync: "true"
+            replicaCount: "1"
+          - env: prod
+            namespace: prod
+            valuesFile: values-prod.yaml
+            autoSync: "false"
+            replicaCount: "5"
+
+  template:
+    metadata:
+      name: 'python-app-{{.env}}'
+    spec:
+      project: default
+      
+      source:
+        repoURL: https://github.com/PrizrakZamkov/DevOps-Core-Course-Prizrak.git
+        targetRevision: main
+        path: k8s/system-info-api
+        helm:
+          valueFiles:
+            - '{{.valuesFile}}'
+      
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{.namespace}}'
+
+  templatePatch: |
+    spec:
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=true
+        retry:
+          limit: 5
+          backoff:
+            duration: 5s
+            factor: 2
+            maxDuration: 3m
+        {{- if eq .autoSync "true" }}
+        automated:
+          prune: true
+          selfHeal: true
+        {{- end }}

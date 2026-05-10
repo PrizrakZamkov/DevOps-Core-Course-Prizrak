@@ -1,0 +1,23 @@
+{
+  "name": "devops-core-course-prizrak",
+  "version": "1.0.0",
+  "description": "[![Labs](https://img.shields.io/badge/Labs-18-blue)](#labs)\r [![Exam](https://img.shields.io/badge/Exam-Optional-green)](#exam-alternative)\r [![Duration](https://img.shields.io/badge/Duration-18%20Weeks-lightgrey)](#course-roadmap)",
+  "main": "index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PrizrakZamkov/DevOps-Core-Course-Prizrak.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/PrizrakZamkov/DevOps-Core-Course-Prizrak/issues"
+  },
+  "homepage": "https://github.com/PrizrakZamkov/DevOps-Core-Course-Prizrak#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.59.1",
+    "@types/node": "^25.6.2"
+  }
+}
