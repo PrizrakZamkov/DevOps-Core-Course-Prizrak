@@ -217,4 +217,8 @@ def handle_exception(error):
 
 if __name__ == '__main__':
     logger.info('Starting Flask server')
-    app.run(host='0.0.0.0', port=6000, debug=False)
+    app.run(
+        host=os.getenv('HOST', '0.0.0.0'),
+        port=int(os.getenv('PORT', '6000')),
+        debug=os.getenv('DEBUG', 'false').lower() == 'true'
+    )
